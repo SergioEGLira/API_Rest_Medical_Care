@@ -1,0 +1,2520 @@
+{
+	"info": {
+		"_postman_id": "27abdecb-0486-4e69-8d7d-fb7fffc28e4b",
+		"name": "TEST_Postman_AdministracaoHospitalar",
+		"description": "Api Documentation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login ADMIN / USUÁRIO",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"if (responseCode.code >= 200 && responseCode.code < 300) {\r",
+									"    var json = JSON.parse(responseBody);\r",
+									"    postman.setEnvironmentVariable('token', json.access_token);\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{client-secret}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{client-id}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/oauth/token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "User by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body \", function(){\r",
+									"    var responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.firstName).to.eql(\"Pedro\");\r",
+									"    pm.expect(responseJson.lastName).to.eql(\"Almeida\");\r",
+									"    pm.expect(responseJson.email).to.eql(\"pedro@gmail.com\");\r",
+									"    pm.expect(responseJson.roles[0].authority).to.eql(\"ROLE_OPERATOR\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User < error, New user Email duplicado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {\r",
+									"    pm.response.to.have.status(422);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"pedro@gmail.com\",\r\n  \"firstName\": \"Fábio\",\r\n  \"lastName\": \"Castro\",\r\n  \"password\": \"123silvia321\",\r\n  \"roles\": [\r\n    {      \r\n      \"id\": 1\r\n    },\r\n    {      \r\n      \"id\": 2\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users < paginação com respectivas permissões",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body Id:1\", function(){\r",
+									"    var responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.content [0].firstName).to.eql(\"Pedro\");\r",
+									"    pm.expect(responseJson.content [0].lastName).to.eql(\"Almeida\");\r",
+									"    pm.expect(responseJson.content [0].email).to.eql(\"pedro@gmail.com\");\r",
+									"    pm.expect(responseJson.content[0].roles[0].authority).to.eql(\"ROLE_OPERATOR\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"    var responseJson = pm.response.json();    \r",
+									"    pm.expect(responseJson.content[1].roles[0].authority).to.be.oneOf([\"ROLE_OPERATOR\", \"ROLE_ADMIN\"]);\r",
+									"    pm.expect(responseJson.content[1].roles[1].authority).to.be.oneOf([\"ROLE_OPERATOR\", \"ROLE_ADMIN\"]);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Total de objetos são 02\", function(){\r",
+									"    var responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.content).length(2);\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=0&size=12&sort=firstName",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "12"
+								},
+								{
+									"key": "sort",
+									"value": "firstName"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New user Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const suffix = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);\r",
+									"pm.collectionVariables.set(\"emailRandom\", \"Maria_Random\" + \"_\" + suffix + \"@gmail.com\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"{{emailRandom}}\",\r\n  \"firstName\": \"Silvia\",\r\n  \"lastName\": \"Camilla\",\r\n  \"password\": \"123silvia321\",\r\n  \"roles\": [\r\n    {      \r\n      \"id\": 1\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"    var responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.firstName).to.eql(\"Silvia\");\r",
+									"    pm.expect(responseJson.lastName).to.eql(\"Camilla\");\r",
+									"    pm.expect(responseJson.email).to.eql(\"alternativosilvia@email.com\");\r",
+									"    pm.expect(responseJson.roles[0].authority).to.be.oneOf([\"ROLE_OPERATOR\", \"ROLE_ADMIN\"]);\r",
+									"    pm.expect(responseJson.roles[1].authority).to.be.oneOf([\"ROLE_OPERATOR\", \"ROLE_ADMIN\"]);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"alternativosilvia@email.com\",\r\n  \"firstName\": \"Silvia\",\r\n  \"lastName\": \"Camilla\",\r\n  \"password\": \"123silvia321\",\r\n  \"roles\": [\r\n    {      \r\n      \"id\": 1\r\n    },\r\n    {      \r\n      \"id\": 2\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user  /123 < error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/123",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"123"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user /1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Se body é null\", function(){\r",
+									"    pm.response.to.not.have.header();\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User < error, Update user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {\r",
+									"    pm.response.to.have.status(422);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"alternativosilvia@email.com\",\r\n  \"firstName\": \"Silvia\",\r\n  \"lastName\": \"\",\r\n  \"password\": \"123silvia321\",\r\n  \"roles\": [\r\n    {      \r\n      \"id\": 1\r\n    },\r\n    {      \r\n      \"id\": 2\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users < error, paginação",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=0&size=12&sort=firstNames",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "12"
+								},
+								{
+									"key": "sort",
+									"value": "firstNames"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New user Role/Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const suffix = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);\r",
+									"pm.collectionVariables.set(\"emailRandom\", \"Maria_Random\" + \"_\" + suffix + \"@gmail.com\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"{{emailRandom}}\",\r\n  \"firstName\": \"Silvia\",\r\n  \"lastName\": \"Camilla\",\r\n  \"password\": \"123silvia321\",\r\n  \"roles\": [\r\n    {      \r\n      \"id\": 1\r\n    },\r\n    {      \r\n      \"id\": 2\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New user Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const suffix = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);\r",
+									"pm.collectionVariables.set(\"emailRandom\", \"Maria_Random\" + \"_\" + suffix + \"@gmail.com\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"{{emailRandom}}\",\r\n  \"firstName\": \"Silvia\",\r\n  \"lastName\": \"Camilla\",\r\n  \"password\": \"123silvia321\",\r\n  \"roles\": [\r\n    {      \r\n      \"id\": 1\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hospital",
+			"item": [
+				{
+					"name": "Paginação, com limitação de intervalo de tempo min/max",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body Id:2 \", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.content [1].id).to.eql(2);\r",
+									"pm.expect(responseJson.content [1].nomeDoHospital).to.eql(\"Hospital Nossa Senhora das Graças\");\r",
+									"pm.expect(responseJson.content [1].enderecoDoHospital).to.eql(\"Av. Visc. de Jequitinhonha, 1144, Recife - PE\");\r",
+									"pm.expect(responseJson.content [1].bairroDoHospital).to.eql(\"Boa Viagem\");\r",
+									"pm.expect(responseJson.content [1].cepDoHospital).to.eql(\"51030-020\");\r",
+									"pm.expect(responseJson.content [1].telefoneDoHospital).to.eql(\"(81) 3216-2221\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Se existe objeto Hospital Nossa Senhora das Graças\", function(){\r",
+									"console.log(pm.response.text());\r",
+									"pm.expect(pm.response.text()).to.includes(\"Hospital Nossa Senhora das Graças\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Hospital aleatório deve sim ter nome\", function(){\r",
+									"pm.expect(_.sample(pm.response.json().content).enderecoDoHospital).to.not.be.undefined;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Total de objetos são 03\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.content).length(3);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospital/paginacaoComSeisParametros?min=2021-01-01T05:00:00Z&max=2021-01-27T19:00:00Z&direction=DESC&linesPerPage=0&orderBy=moment&page=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospital",
+								"paginacaoComSeisParametros"
+							],
+							"query": [
+								{
+									"key": "min",
+									"value": "2021-01-01T05:00:00Z"
+								},
+								{
+									"key": "max",
+									"value": "2021-01-27T19:00:00Z"
+								},
+								{
+									"key": "direction",
+									"value": "DESC"
+								},
+								{
+									"key": "linesPerPage",
+									"value": "0"
+								},
+								{
+									"key": "orderBy",
+									"value": "moment"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginação, sem limitação de intervalo de tempo min/max",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body Id:7 \", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.content [6].id).to.eql(7);\r",
+									"pm.expect(responseJson.content [6].nomeDoHospital).to.eql(\"Hospital e Maternidade Nossa Senhora do Ó\");\r",
+									"pm.expect(responseJson.content [6].enderecoDoHospital).to.eql(\"R. Carlos Gomes, 1050, Recife - PE\");\r",
+									"pm.expect(responseJson.content [6].bairroDoHospital).to.eql(\"Prado\");\r",
+									"pm.expect(responseJson.content [6].cepDoHospital).to.eql(\"50751-130\");\r",
+									"pm.expect(responseJson.content [6].telefoneDoHospital).to.eql(\"(81) 3228-5143\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Se existe objeto Hospital Nossa Senhora das Graças\", function(){\r",
+									"console.log(pm.response.text());\r",
+									"pm.expect(pm.response.text()).to.includes(\"Hospital Nossa Senhora das Graças\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Hospital aleatório deve sim ter nome\", function(){\r",
+									"pm.expect(_.sample(pm.response.json().content).enderecoDoHospital).to.not.be.undefined;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Total de objetos são 07\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.content).length(7);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospital/paginacaoComSeisParametros?min=&max=&direction=ASC&linesPerPage=0&orderBy=nomeDoHospital&page=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospital",
+								"paginacaoComSeisParametros"
+							],
+							"query": [
+								{
+									"key": "min",
+									"value": ""
+								},
+								{
+									"key": "max",
+									"value": ""
+								},
+								{
+									"key": "direction",
+									"value": "ASC"
+								},
+								{
+									"key": "linesPerPage",
+									"value": "0"
+								},
+								{
+									"key": "orderBy",
+									"value": "nomeDoHospital"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hospital",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.id).to.eql(8);\r",
+									"pm.expect(responseJson.nomeDoHospital).to.eql(\"Real Hospital Português\");\r",
+									"pm.expect(responseJson.enderecoDoHospital).to.eql(\"Av. Conselheiro Aguiar, 2502, Recife - PE\");\r",
+									"pm.expect(responseJson.bairroDoHospital).to.eql(\"Boa Viagem\");\r",
+									"pm.expect(responseJson.cepDoHospital).to.eql(\"51020-020\");\r",
+									"pm.expect(responseJson.telefoneDoHospital).to.eql(\"(81) 3416-1800\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nomeDoHospital\": \"Real Hospital Português\",\r\n  \"enderecoDoHospital\": \"Av. Conselheiro Aguiar, 2502, Recife - PE\",\r\n  \"bairroDoHospital\": \"Boa Viagem\",\r\n  \"cepDoHospital\": \"51020-020\",  \r\n  \"telefoneDoHospital\": \"(81) 3416-1800\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospital",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospital"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hospital 'Id 8'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.id).to.eql(8);\r",
+									"pm.expect(responseJson.nomeDoHospital).to.eql(\"NeW Real Hospital Português\");\r",
+									"pm.expect(responseJson.enderecoDoHospital).to.eql(\"Av. Conselheiro Aguiar, 2502, Recife - PE\");\r",
+									"pm.expect(responseJson.bairroDoHospital).to.eql(\"New Boa Viagem\");\r",
+									"pm.expect(responseJson.cepDoHospital).to.eql(\"New 51020-020\");\r",
+									"pm.expect(responseJson.telefoneDoHospital).to.eql(\"NeW (81) 3416-1800\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nomeDoHospital\": \"NeW Real Hospital Português\",\r\n  \"enderecoDoHospital\": \"Av. Conselheiro Aguiar, 2502, Recife - PE\",\r\n  \"bairroDoHospital\": \"New Boa Viagem\",\r\n  \"cepDoHospital\": \"New 51020-020\",  \r\n  \"telefoneDoHospital\": \"NeW (81) 3416-1800\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospital/8",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospital",
+								"8"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hospital 'Id 7'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospital/7",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospital",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findById Hospital 'Id 2'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.id).to.eql(2);\r",
+									"pm.expect(responseJson.nomeDoHospital).to.eql(\"Hospital Nossa Senhora das Graças\");\r",
+									"pm.expect(responseJson.enderecoDoHospital).to.eql(\"Av. Visc. de Jequitinhonha, 1144, Recife - PE\");\r",
+									"pm.expect(responseJson.bairroDoHospital).to.eql(\"Boa Viagem\");\r",
+									"pm.expect(responseJson.cepDoHospital).to.eql(\"51030-020\");\r",
+									"pm.expect(responseJson.telefoneDoHospital).to.eql(\"(81) 3216-2221\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospital/2/findById",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospital",
+								"2",
+								"findById"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findBy Bairro IgnoreCase",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson[1].id).to.eql(3);\r",
+									"pm.expect(responseJson[1].nomeDoHospital).to.eql(\"Hospital de Boa Viagem\");\r",
+									"pm.expect(responseJson[1].enderecoDoHospital).to.eql(\"R. Ana Camelo da Silva, 315, Recife - PE\");\r",
+									"pm.expect(responseJson[1].bairroDoHospital).to.eql(\"Boa Viagem\");\r",
+									"pm.expect(responseJson[1].cepDoHospital).to.eql(\"51111-040\");\r",
+									"pm.expect(responseJson[1].telefoneDoHospital).to.eql(\"(81) 3325-9999\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospital/boa/bairroDoHospitalIgnoreCase",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospital",
+								"boa",
+								"bairroDoHospitalIgnoreCase"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findBy Nome IgnoreCase",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson[0].id).to.eql(6);\r",
+									"pm.expect(responseJson[0].nomeDoHospital).to.eql(\"Hospital Espinheiro\");\r",
+									"pm.expect(responseJson[0].enderecoDoHospital).to.eql(\"R. do Espinheiro, 222, Recife - PE\");\r",
+									"pm.expect(responseJson[0].bairroDoHospital).to.eql(\"Espinheiro\");\r",
+									"pm.expect(responseJson[0].cepDoHospital).to.eql(\"52020-020\");\r",
+									"pm.expect(responseJson[0].telefoneDoHospital).to.eql(\"(81) 4002-3633\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospital/esp/nomeDoHospitalIgnoreCase",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospital",
+								"esp",
+								"nomeDoHospitalIgnoreCase"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Paciente",
+			"item": [
+				{
+					"name": "Paciente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.id).to.eql(13);\r",
+									"pm.expect(responseJson.nome).to.eql(\"Márcio Gabriel Ian da Costa\");\r",
+									"pm.expect(responseJson.email).to.eql(\"marciogabrieliandacosta@metododerose.org\");\r",
+									"pm.expect(responseJson.cpf).to.eql(\"497.499.315-13\");\r",
+									"pm.expect(responseJson.dataDeNascimento).to.eql(\"07-01-1942\");\r",
+									"pm.expect(responseJson.logradouro).to.eql(\"Rua das Palmeiras\");\r",
+									"pm.expect(responseJson.numero).to.eql(599);\r",
+									"pm.expect(responseJson.complemento).to.eql(\"Apt 802\");\r",
+									"pm.expect(responseJson.bairro).to.eql(\"Morada da Barra\");\r",
+									"pm.expect(responseJson.localidade).to.eql(\"Vila Velha\");\r",
+									"pm.expect(responseJson.uf).to.eql(\"ES\");\r",
+									"pm.expect(responseJson.cep).to.eql(\"29126-572\");\r",
+									"pm.expect(responseJson.idade).to.eql(80);\r",
+									"pm.expect(responseJson.tipoSanguineo).to.eql(\"B+\");\r",
+									"pm.expect(responseJson.enfermidade).to.eql(\"Diabetes\");\r",
+									"pm.expect(responseJson.dataDeInternamento).to.eql(\"07-01-2022\");\r",
+									"pm.expect(responseJson.alaHospitalar).to.eql(\"enfermaria\");\r",
+									"pm.expect(responseJson.gravidadeDaEnfermidade).to.eql(\"LEVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"Márcio Gabriel Ian da Costa\",\r\n  \"cep\": \"29126-572\",\r\n  \"complemento\": \"Apt 802\",\r\n  \"numero\": 599,\r\n  \"cpf\": \"497.499.315-13\",\r\n  \"email\": \"marciogabrieliandacosta@metododerose.org\",\r\n  \"tipoSanguineo\": \"B+\",\r\n  \"dataDeNascimento\": \"07-01-1942\",\r\n  \"idade\": 80,\r\n  \"dataDeInternamento\": \"07-01-2022\",\r\n  \"alaHospitalar\": \"enfermaria\",\r\n  \"enfermidade\": \"Diabetes\",\r\n  \"gravidadeDaEnfermidade\": \"LEVE\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente 'Id 1'  findById",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.nome).to.eql(\"Daiane Ana Bernardes\");\r",
+									"pm.expect(responseJson.cpf).to.eql(\"451.527.234-92\");\r",
+									"pm.expect(responseJson.email).to.eql(\"s__daianeanabernardes@autbook.com\");\r",
+									"pm.expect(responseJson.logradouro).to.eql(\"Rua Santa Agripina\");\r",
+									"pm.expect(responseJson.complemento).to.eql(\"Apt 02\");\r",
+									"pm.expect(responseJson.numero).to.eql(470);\r",
+									"pm.expect(responseJson.bairro).to.eql(\"Linha do Tiro\");\r",
+									"pm.expect(responseJson.localidade).to.eql(\"Recife\");\r",
+									"pm.expect(responseJson.uf).to.eql(\"PE\");\r",
+									"pm.expect(responseJson.cep).to.eql(\"52131-600\");\r",
+									"pm.expect(responseJson.dataDeNascimento).to.eql(\"04-10-2006\");\r",
+									"pm.expect(responseJson.idade).to.eql(16);\r",
+									"pm.expect(responseJson.tipoSanguineo).to.eql(\"AB\");\r",
+									"pm.expect(responseJson.enfermidade).to.eql(\"diabetes\");\r",
+									"pm.expect(responseJson.dataDeInternamento).to.eql(\"06-12-2021\");\r",
+									"pm.expect(responseJson.alaHospitalar).to.eql(\"enfermaria\");\r",
+									"pm.expect(responseJson.gravidadeDaEnfermidade).to.eql(\"LEVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/1/findById",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"1",
+								"findById"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente 'Id 1' Características de saúde",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.pacienteId).to.eql(1);\r",
+									"pm.expect(responseJson.tipoSanguineo).to.eql(\"*** B+\");\r",
+									"pm.expect(responseJson.enfermidade).to.eql(\"*** Diabetes\");\r",
+									"pm.expect(responseJson.dataDeInternamento).to.eql(\"07-01-2022\");\r",
+									"pm.expect(responseJson.alaHospitalar).to.eql(\"*** enfermaria\");\r",
+									"pm.expect(responseJson.gravidadeDaEnfermidade).to.eql(\"LEVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{  \r\n  \"tipoSanguineo\": \"*** B+\",  \r\n  \"enfermidade\": \"*** Diabetes\",\r\n  \"dataDeInternamento\": \"07-01-2022\",\r\n  \"alaHospitalar\": \"*** enfermaria\",\r\n  \"gravidadeDaEnfermidade\": \"LEVE\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/1/caracteristicasDeSaude",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"1",
+								"caracteristicasDeSaude"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente 'Id 1'  findById",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.nome).to.eql(\"Daiane Ana Bernardes\");\r",
+									"pm.expect(responseJson.cpf).to.eql(\"451.527.234-92\");\r",
+									"pm.expect(responseJson.email).to.eql(\"s__daianeanabernardes@autbook.com\");\r",
+									"pm.expect(responseJson.logradouro).to.eql(\"Rua Santa Agripina\");\r",
+									"pm.expect(responseJson.complemento).to.eql(\"Apt 02\");\r",
+									"pm.expect(responseJson.numero).to.eql(470);\r",
+									"pm.expect(responseJson.bairro).to.eql(\"Linha do Tiro\");\r",
+									"pm.expect(responseJson.localidade).to.eql(\"Recife\");\r",
+									"pm.expect(responseJson.uf).to.eql(\"PE\");\r",
+									"pm.expect(responseJson.cep).to.eql(\"52131-600\");\r",
+									"pm.expect(responseJson.dataDeNascimento).to.eql(\"04-10-2006\");\r",
+									"pm.expect(responseJson.idade).to.eql(16);\r",
+									"pm.expect(responseJson.tipoSanguineo).to.eql(\"*** B+\");\r",
+									"pm.expect(responseJson.enfermidade).to.eql(\"*** Diabetes\");\r",
+									"pm.expect(responseJson.dataDeInternamento).to.eql(\"07-01-2022\");\r",
+									"pm.expect(responseJson.alaHospitalar).to.eql(\"*** enfermaria\");\r",
+									"pm.expect(responseJson.gravidadeDaEnfermidade).to.eql(\"LEVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/1/findById",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"1",
+								"findById"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente 'Id 1' Características de cadastro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.pacienteId).to.eql(1);\r",
+									"pm.expect(responseJson.nome).to.eql(\"xxx Daiane Ana Bernardes\");\r",
+									"pm.expect(responseJson.dataDeNascimento).to.eql(\"04-10-2006\");\r",
+									"pm.expect(responseJson.logradouro).to.eql(\"xxx Rua Santa Agripina\");\r",
+									"pm.expect(responseJson.numero).to.eql(470);\r",
+									"pm.expect(responseJson.complemento).to.eql(\"xxx Apt 02\");\r",
+									"pm.expect(responseJson.bairro).to.eql(\"xxx Linha do Tiro\");\r",
+									"pm.expect(responseJson.localidade).to.eql(\"xxx Recife\");\r",
+									"pm.expect(responseJson.uf).to.eql(\"xxx PE\");\r",
+									"pm.expect(responseJson.cep).to.eql(\"52131-600\");\r",
+									"pm.expect(responseJson.idade).to.eql(16);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"xxx Daiane Ana Bernardes\",  \r\n  \"dataDeNascimento\": \"04-10-2006\",\r\n  \"idade\": 16, \r\n  \"logradouro\": \"xxx Rua Santa Agripina\",\r\n  \"numero\": 470,\r\n  \"complemento\": \"xxx Apt 02\",\r\n  \"localidade\": \"xxx Recife\",\r\n  \"bairro\": \"xxx Linha do Tiro\",\r\n  \"cep\": \"52131-600\",\r\n  \"uf\": \"xxx PE\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/1/caracteristicasDeCadastro",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"1",
+								"caracteristicasDeCadastro"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente 'Id 1'  findById",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.nome).to.eql(\"xxx Daiane Ana Bernardes\");\r",
+									"pm.expect(responseJson.cpf).to.eql(\"451.527.234-92\");\r",
+									"pm.expect(responseJson.email).to.eql(\"s__daianeanabernardes@autbook.com\");\r",
+									"pm.expect(responseJson.logradouro).to.eql(\"xxx Rua Santa Agripina\");\r",
+									"pm.expect(responseJson.complemento).to.eql(\"xxx Apt 02\");\r",
+									"pm.expect(responseJson.numero).to.eql(470);\r",
+									"pm.expect(responseJson.bairro).to.eql(\"xxx Linha do Tiro\");\r",
+									"pm.expect(responseJson.localidade).to.eql(\"xxx Recife\");\r",
+									"pm.expect(responseJson.uf).to.eql(\"xxx PE\");\r",
+									"pm.expect(responseJson.cep).to.eql(\"52131-600\");\r",
+									"pm.expect(responseJson.dataDeNascimento).to.eql(\"04-10-2006\");\r",
+									"pm.expect(responseJson.idade).to.eql(16);\r",
+									"pm.expect(responseJson.tipoSanguineo).to.eql(\"*** B+\");\r",
+									"pm.expect(responseJson.enfermidade).to.eql(\"*** Diabetes\");\r",
+									"pm.expect(responseJson.dataDeInternamento).to.eql(\"07-01-2022\");\r",
+									"pm.expect(responseJson.alaHospitalar).to.eql(\"*** enfermaria\");\r",
+									"pm.expect(responseJson.gravidadeDaEnfermidade).to.eql(\"LEVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/1/findById",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"1",
+								"findById"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente findByCPF",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.nome).to.eql(\"Isaac Emanuel Anthony Freitas\");\r",
+									"pm.expect(responseJson.cpf).to.eql(\"032.544.534-68\");\r",
+									"pm.expect(responseJson.email).to.eql(\"isaacemanuelanthonyfreitas-88@publicar.com.br\");\r",
+									"pm.expect(responseJson.logradouro).to.eql(\"1ª Travessa Bonito de Santa Fé\");\r",
+									"pm.expect(responseJson.complemento).to.eql(\"Bl-A, Apt 301\");\r",
+									"pm.expect(responseJson.numero).to.eql(1227);\r",
+									"pm.expect(responseJson.bairro).to.eql(\"Casa Amarela\");\r",
+									"pm.expect(responseJson.localidade).to.eql(\"Recife\");\r",
+									"pm.expect(responseJson.uf).to.eql(\"PE\");\r",
+									"pm.expect(responseJson.cep).to.eql(\"52070-488\");\r",
+									"pm.expect(responseJson.dataDeNascimento).to.eql(\"07-01-1963\");\r",
+									"pm.expect(responseJson.idade).to.eql(59);\r",
+									"pm.expect(responseJson.tipoSanguineo).to.eql(\"B-\");\r",
+									"pm.expect(responseJson.enfermidade).to.eql(\"Insuficiência cardíaca\");\r",
+									"pm.expect(responseJson.dataDeInternamento).to.eql(\"13-12-2021\");\r",
+									"pm.expect(responseJson.alaHospitalar).to.eql(\"UTI\");\r",
+									"pm.expect(responseJson.gravidadeDaEnfermidade).to.eql(\"GRAVE\");\r",
+									"pm.expect(responseJson.updatedAt).to.eql(null);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/032.544.534-68/findByCpf",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"032.544.534-68",
+								"findByCpf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente findByPartesDoNome",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson[0].nome).to.eql(\"Isaac Emanuel Anthony Freitas\");\r",
+									"pm.expect(responseJson[0].cpf).to.eql(\"032.544.534-68\");\r",
+									"pm.expect(responseJson[0].email).to.eql(\"isaacemanuelanthonyfreitas-88@publicar.com.br\");\r",
+									"pm.expect(responseJson[0].logradouro).to.eql(\"1ª Travessa Bonito de Santa Fé\");\r",
+									"pm.expect(responseJson[0].complemento).to.eql(\"Bl-A, Apt 301\");\r",
+									"pm.expect(responseJson[0].numero).to.eql(1227);\r",
+									"pm.expect(responseJson[0].bairro).to.eql(\"Casa Amarela\");\r",
+									"pm.expect(responseJson[0].localidade).to.eql(\"Recife\");\r",
+									"pm.expect(responseJson[0].uf).to.eql(\"PE\");\r",
+									"pm.expect(responseJson[0].cep).to.eql(\"52070-488\");\r",
+									"pm.expect(responseJson[0].dataDeNascimento).to.eql(\"07-01-1963\");\r",
+									"pm.expect(responseJson[0].idade).to.eql(59);\r",
+									"pm.expect(responseJson[0].tipoSanguineo).to.eql(\"B-\");\r",
+									"pm.expect(responseJson[0].enfermidade).to.eql(\"Insuficiência cardíaca\");\r",
+									"pm.expect(responseJson[0].dataDeInternamento).to.eql(\"13-12-2021\");\r",
+									"pm.expect(responseJson[0].alaHospitalar).to.eql(\"UTI\");\r",
+									"pm.expect(responseJson[0].gravidadeDaEnfermidade).to.eql(\"GRAVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Paciente aleatório deve sim ter tipoSanguineo\", function(){\r",
+									"pm.expect(_.sample(pm.response.json()).tipoSanguineo).to.not.be.undefined;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Total de objetos são 02\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson).length(2);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/freitas/nameIgnoreCase",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"freitas",
+								"nameIgnoreCase"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente somente Graves, nome Asc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson[2].nome).to.eql(\"Sophia Elza Heloisa Duarte\");\r",
+									"pm.expect(responseJson[2].cpf).to.eql(\"663.939.784-65\");\r",
+									"pm.expect(responseJson[2].email).to.eql(\"sophiaelzaheloisaduarte-94@prokopetz.com.br\");\r",
+									"pm.expect(responseJson[2].logradouro).to.eql(\"Rua Cratem\");\r",
+									"pm.expect(responseJson[2].complemento).to.eql(\"casa 76\");\r",
+									"pm.expect(responseJson[2].numero).to.eql(896);\r",
+									"pm.expect(responseJson[2].bairro).to.eql(\"Água Fria\");\r",
+									"pm.expect(responseJson[2].localidade).to.eql(\"Recife\");\r",
+									"pm.expect(responseJson[2].uf).to.eql(\"PE\");\r",
+									"pm.expect(responseJson[2].cep).to.eql(\"52121-130\");\r",
+									"pm.expect(responseJson[2].dataDeNascimento).to.eql(\"25-02-1957\");\r",
+									"pm.expect(responseJson[2].idade).to.eql(65);\r",
+									"pm.expect(responseJson[2].tipoSanguineo).to.eql(\"AB+\");\r",
+									"pm.expect(responseJson[2].enfermidade).to.eql(\"diabetes\");\r",
+									"pm.expect(responseJson[2].dataDeInternamento).to.eql(\"23-12-2021\");\r",
+									"pm.expect(responseJson[2].alaHospitalar).to.eql(\"UTI\");\r",
+									"pm.expect(responseJson[2].gravidadeDaEnfermidade).to.eql(\"GRAVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){\r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){\r",
+									"pm.expect(pm.response.json()).to.not.be.undefined;\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Paciente aleatório deve sim ter tipoSanguineo\", function(){\r",
+									"pm.expect(_.sample(pm.response.json()).tipoSanguineo).to.not.be.undefined;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Total de objetos são 03\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson).length(3);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/somentePacientesGravesnameAsc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"somentePacientesGravesnameAsc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll Paginado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function () {\r",
+									"    var responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.content [10].nome).to.eql(\"Sophia Elza Heloisa Duarte\");\r",
+									"    pm.expect(responseJson.content [10].cpf).to.eql(\"663.939.784-65\");\r",
+									"    pm.expect(responseJson.content [10].email).to.eql(\"sophiaelzaheloisaduarte-94@prokopetz.com.br\");\r",
+									"    pm.expect(responseJson.content [10].logradouro).to.eql(\"Rua Cratem\");\r",
+									"    pm.expect(responseJson.content [10].complemento).to.eql(\"casa 76\");\r",
+									"    pm.expect(responseJson.content [10].numero).to.eql(896);\r",
+									"    pm.expect(responseJson.content [10].bairro).to.eql(\"Água Fria\");\r",
+									"    pm.expect(responseJson.content [10].localidade).to.eql(\"Recife\");\r",
+									"    pm.expect(responseJson.content [10].uf).to.eql(\"PE\");\r",
+									"    pm.expect(responseJson.content [10].cep).to.eql(\"52121-130\");\r",
+									"    pm.expect(responseJson.content [10].dataDeNascimento).to.eql(\"25-02-1957\");\r",
+									"    pm.expect(responseJson.content [10].idade).to.eql(65);\r",
+									"    pm.expect(responseJson.content [10].tipoSanguineo).to.eql(\"AB+\");\r",
+									"    pm.expect(responseJson.content [10].enfermidade).to.eql(\"diabetes\");\r",
+									"    pm.expect(responseJson.content [10].dataDeInternamento).to.eql(\"23-12-2021\");\r",
+									"    pm.expect(responseJson.content [10].alaHospitalar).to.eql(\"UTI\");\r",
+									"    pm.expect(responseJson.content [10].gravidadeDaEnfermidade).to.eql(\"GRAVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function () {\r",
+									"    pm.response.to.have.header(\"Content-type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Total de objetos são 13\", function () {\r",
+									"    var responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.content).length(13);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/paciente/paginacao?direction=ASC&linesPerPage=24&orderBy=nome&page=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"paginacao"
+							],
+							"query": [
+								{
+									"key": "direction",
+									"value": "ASC"
+								},
+								{
+									"key": "linesPerPage",
+									"value": "24"
+								},
+								{
+									"key": "orderBy",
+									"value": "nome"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paciente 'Id 2'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/paciente/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"paciente",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "EncaminhamentoHospitalar",
+			"item": [
+				{
+					"name": "Encaminhamento 'Id 1'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"pacienteId\": 4,    \r\n    \"hospital\": [\r\n            {     \r\n                \"id\": 5    \r\n            }            \r\n    ]  \r\n}\t",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/encaminhamentoHospitalar",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"encaminhamentoHospitalar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Encaminhamento 'Id 2'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"pacienteId\": 9,    \r\n    \"hospital\": [\r\n            {     \r\n                \"id\": 4    \r\n            }            \r\n    ]  \r\n}\t",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/encaminhamentoHospitalar",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"encaminhamentoHospitalar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Encaminhamento 'Id 3'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"pacienteId\": 11,    \r\n    \"hospital\": [\r\n            {     \r\n                \"id\": 6    \r\n            }            \r\n    ]  \r\n}\t",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/encaminhamentoHospitalar",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"encaminhamentoHospitalar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findById '3'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { \r",
+									" pm.response.to.have.status(200); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"body\", function(){\r",
+									"var responseJson = pm.response.json();\r",
+									"pm.expect(responseJson.pacienteId).to.eql(11);\r",
+									"pm.expect(responseJson.nome).to.eql(\"Lara Liz Caldeira\");\r",
+									"pm.expect(responseJson.cpf).to.eql(\"677.143.244-06\");\r",
+									"pm.expect(responseJson.email).to.eql(\"laralizcaldeira-73@vianetfone.com.br\");\r",
+									"pm.expect(responseJson.logradouro).to.eql(\"Rua Dois\");\r",
+									"pm.expect(responseJson.complemento).to.eql(\"Apt 302\");\r",
+									"pm.expect(responseJson.numero).to.eql(34);\r",
+									"pm.expect(responseJson.bairro).to.eql(\"Santo Amaro\");\r",
+									"pm.expect(responseJson.localidade).to.eql(\"Recife\");\r",
+									"pm.expect(responseJson.uf).to.eql(\"PE\");\r",
+									"pm.expect(responseJson.cep).to.eql(\"50110-667\");\r",
+									"pm.expect(responseJson.dataDeNascimento).to.eql(\"11-07-1992\");\r",
+									"pm.expect(responseJson.idade).to.eql(30);\r",
+									"pm.expect(responseJson.tipoSanguineo).to.eql(\"A-\");\r",
+									"pm.expect(responseJson.enfermidade).to.eql(\"Pneumonia\");\r",
+									"pm.expect(responseJson.dataDeInternamento).to.eql(\"27-12-2021\");\r",
+									"pm.expect(responseJson.alaHospitalar).to.eql(\"UTI\");\r",
+									"pm.expect(responseJson.gravidadeDaEnfermidade).to.eql(\"MODERADA\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body informações do hospital\", function(){ \r",
+									"console.log(pm.response.text()); \r",
+									"pm.expect(pm.response.text()).to.includes(\"Hospital Espinheiro\");\r",
+									"pm.expect(pm.response.text()).to.includes(\"R. do Espinheiro, 222, Recife - PE\");\r",
+									"pm.expect(pm.response.text()).to.includes(\"Espinheiro\");\r",
+									"pm.expect(pm.response.text()).to.includes(\"52020-020\");\r",
+									"pm.expect(pm.response.text()).to.includes(\"(81) 4002-3633\");\r",
+									"}); \r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){ \r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\"); \r",
+									"}); \r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){ \r",
+									"pm.expect(pm.response.json()).to.not.be.undefined; \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/encaminhamentoHospitalar/3/findById",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"encaminhamentoHospitalar",
+								"3",
+								"findById"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { \r",
+									" pm.response.to.have.status(200); \r",
+									"}); \r",
+									"\r",
+									"pm.test(\"body\", function () {\r",
+									"    var responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson[1].nome).to.eql(\"Caio Luiz Matheus da Mota\");\r",
+									"    pm.expect(responseJson[1].cpf).to.eql(\"198.068.154-67\");\r",
+									"    pm.expect(responseJson[1].email).to.eql(\"caioluizmatheusdamota_@alcastro.com.br\");\r",
+									"    pm.expect(responseJson[1].logradouro).to.eql(\"Rua Professora Rosilda Costa\");\r",
+									"    pm.expect(responseJson[1].complemento).to.eql(\"Bl-b, Apt 003\");\r",
+									"    pm.expect(responseJson[1].numero).to.eql(602);\r",
+									"    pm.expect(responseJson[1].bairro).to.eql(\"Imbiribeira\");\r",
+									"    pm.expect(responseJson[1].localidade).to.eql(\"Recife\");\r",
+									"    pm.expect(responseJson[1].uf).to.eql(\"PE\");\r",
+									"    pm.expect(responseJson[1].cep).to.eql(\"51150-020\");\r",
+									"    pm.expect(responseJson[1].dataDeNascimento).to.eql(\"02-08-1992\");\r",
+									"    pm.expect(responseJson[1].idade).to.eql(30);\r",
+									"    pm.expect(responseJson[1].tipoSanguineo).to.eql(\"B-\");\r",
+									"    pm.expect(responseJson[1].enfermidade).to.eql(\"Miocardiopatias\");\r",
+									"    pm.expect(responseJson[1].dataDeInternamento).to.eql(\"19-11-2021\");\r",
+									"    pm.expect(responseJson[1].alaHospitalar).to.eql(\"UTI\");\r",
+									"    pm.expect(responseJson[1].gravidadeDaEnfermidade).to.eql(\"LEVE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"body informações do hospital\", function(){ \r",
+									"console.log(pm.response.text()); \r",
+									"pm.expect(pm.response.text()).to.includes(\"Hospital Agamenon Magalhães\"); \r",
+									"pm.expect(pm.response.text()).to.includes(\"Hospital Espinheiro\"); \r",
+									"pm.expect(pm.response.text()).to.includes(\"Hospital Espinheiro\"); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type application/json\", function(){ \r",
+									"pm.response.to.have.header(\"Content-type\", \"application/json\"); \r",
+									"}); \r",
+									"\r",
+									"pm.test(\"Retorna um body\", function(){ \r",
+									"pm.expect(pm.response.json()).to.not.be.undefined; \r",
+									"}) \r",
+									"\r",
+									"pm.test(\"Total de objetos são 03\", function(){ \r",
+									"var responseJson = pm.response.json(); \r",
+									"pm.expect(responseJson).length(3); \r",
+									"}); "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/encaminhamentoHospitalar/Encaminhamento",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"encaminhamentoHospitalar",
+								"Encaminhamento"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "//localhost:8080/"
+		},
+		{
+			"key": "emailRandom",
+			"value": ""
+		}
+	]
+}
